@@ -5,7 +5,7 @@ module DX
     getter :data
 
     def initialize
-      @data = Hash(::String, Hash(Symbol, Int32 | ::String)).new
+      @data = Hash(::String, Hash(Symbol, Int32 | ::String | NamedTuple(body: ::String, arguments: Array(::String)))).new
     end
 
     def allocated?(key)
@@ -25,7 +25,7 @@ module DX
     end
 
     def set_definition(key, kind)
-      @data[key] = Hash(Symbol, Int32 | ::String).new
+      @data[key] = Hash(Symbol, Int32 | ::String | NamedTuple(body: ::String, arguments: Array(::String))).new
       @data[key][:kind] = kind
     end
   end
@@ -55,16 +55,18 @@ module DX
       when Print
         puts eval(stm.exp)
       when Comment
+      when Plus
+        eval(stm)
       else
         raise "Unknown stm: #{stm} in exec"
       end
     end
 
     def print_env
-      puts @env
+      puts @env.data.to_s
     end
 
-    def eval(value : Exp) : Int32 | ::String
+    def eval(value : Exp) : Int32 | ::String | NamedTuple(body: ::String, arguments: Array(::String))
       case value
       when ID
         @env.get(value.id)
@@ -74,7 +76,30 @@ module DX
       when Multi   then ensure_int_or_id(eval(value.e1)) * ensure_int_or_id(eval(value.e2))
       when Minus   then ensure_int_or_id(eval(value.e1)) - ensure_int_or_id(eval(value.e2))
       when String  then value.exp
-      else              raise "Evaluation not found to #{value}"
+      when DefFunc then NamedTuple.new(body: value.body, arguments: value.arguments)
+      when CallFunc
+        func = @env.get(value.name)
+        if func.is_a?(NamedTuple)
+          e = Eval.new
+          p = Parser.new
+          body = assigns(Hash.zip(func[:arguments], value.arguments))
+          body.push func[:body]
+
+          stms = p.parse(body)
+
+          result = ""
+          stms.each do |a|
+            result = e.exec(a)
+          end
+
+          if result.is_a?(Nil)
+            raise "Error: Function"
+          end
+
+          return result
+        end
+        raise "Error: Function"
+      else raise "Evaluation not found to #{value}"
       end
     end
 
@@ -86,6 +111,18 @@ module DX
                  raise("#{value} should be integer")
                end
       return result
+    end
+
+    def assigns(a)
+      p = Parser.new
+      a.map do |k, v|
+        type_def, var_name = deftype(k)
+        ["#{type_def}", "#{var_name.strip} = #{v.strip}"]
+      end.flatten
+    end
+
+    def deftype(k)
+      [k.strip, k.split("::")[0].strip]
     end
   end
 end

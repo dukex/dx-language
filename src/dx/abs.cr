@@ -154,4 +154,24 @@ module DX
       io << "<String exp=#{@exp}>"
     end
   end
+
+  class DefFunc < Exp
+    @arguments : Array(::String)
+    @body : ::String
+
+    getter :body, :arguments
+
+    def initialize(@arguments, @body)
+    end
+  end
+
+  class CallFunc < Exp
+    @arguments : Array(::String)
+    @name : ::String
+
+    getter :name, :arguments
+
+    def initialize(@name, @arguments)
+    end
+  end
 end

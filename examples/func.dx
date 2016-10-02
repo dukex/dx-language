@@ -1,0 +1,18 @@
+f :: Func
+
+f = func(x :: Int, y :: Int, e :: Int) -> x + y * e
+
+a :: Int
+a = f 1, 2, 4
+
+b :: Int
+b = 1 + 4
+
+print a
+print b
+
+c :: Int
+c = f 10, 5, 5
+
+print c
+

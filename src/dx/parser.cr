@@ -9,6 +9,8 @@ module DX
       int = /([0-9]+)/
       expr = /(.*)/
       string = /"(.+)"/
+      func_def = /func/
+      func_call = /(\w) (.+)/
 
       @parse_patterns = [
         {name: "Vardef", regex: [id, / :: /, typ]},
@@ -18,6 +20,8 @@ module DX
 
         {name: "Id", regex: [id]},
 
+        {name: "DefFunc", regex: [func_def, /\((.+)\) -> /, /(.*)/]},
+
         {name: "Int", regex: [int]},
         {name: "String", regex: [string]},
         {name: "Plus", regex: [expr, / \+ /, expr]},
@@ -25,9 +29,12 @@ module DX
         {name: "Neg", regex: [/-/, expr]},
         {name: "Multi", regex: [expr, / \* /, expr]},
 
+        {name: "CallFunc", regex: [func_call]},
+
         {name: "Print", regex: [/print /, expr]},
 
         {name: "Comment", regex: [/#/, expr]},
+
       ]
 
       @rules = [] of ParseRule
@@ -58,6 +65,7 @@ module DX
                    when "Assign"  then assign(matched)
                    when "Print"   then print(matched)
                    when "Comment" then comment(matched)
+                   when "Plus"    then plus(matched)
                    else
                      raise "Parse Error: stm rule '#{rule.name}' not implemented"
                    end
@@ -74,13 +82,15 @@ module DX
         matched = rule.match(s)
         if matched
           result = case rule.name
-                   when "Id"     then id(matched)
-                   when "Int"    then int(matched)
-                   when "Neg"    then neg(matched)
-                   when "Plus"   then plus(matched)
-                   when "Minus"  then minus(matched)
-                   when "Multi"  then multi(matched)
-                   when "String" then string(matched)
+                   when "Id"       then id(matched)
+                   when "Int"      then int(matched)
+                   when "Neg"      then neg(matched)
+                   when "Plus"     then plus(matched)
+                   when "Minus"    then minus(matched)
+                   when "Multi"    then multi(matched)
+                   when "String"   then string(matched)
+                   when "DefFunc"  then deffunc(matched)
+                   when "CallFunc" then callfunc(matched)
                    else
                      raise "Parse Error: expr rule '#{rule.name}' not implemented"
                    end
@@ -116,6 +126,18 @@ module DX
 
     private def int(s)
       Integer.new(Int32.new(s[1]))
+    end
+
+    private def deffunc(cap)
+      arguments = cap[1].split(",")
+      body = cap[2]
+      DefFunc.new arguments, body
+    end
+
+    private def callfunc(cap)
+      name = cap[1]
+      arguments = cap[2].split(",")
+      CallFunc.new name, arguments
     end
 
     private def neg(cap)
