@@ -7,13 +7,19 @@ module DX
 
   class Definition < Exp
     @name : Exp
-    @value : ::String
+    @type : ::String
 
-    def initialize(@name, @value)
+    getter :name, :type
+
+    def initialize(@name, @type)
+    end
+
+    def name
+      @name.id
     end
 
     def to_s(io)
-      io << "<Definition name=#{@name} value=#{@value}>"
+      io << "<Definition name=#{@name} type=#{@type}>"
     end
   end
 

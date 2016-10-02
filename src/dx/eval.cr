@@ -1,22 +1,56 @@
 require "./abs"
 
 module DX
-  class Eval
-    @env : Hash(::String, Int32 | ::String)
+  class Env
+    getter :data
 
     def initialize
-      @env = Hash(::String, Int32 | ::String).new
+      @data = Hash(::String, Hash(Symbol, Int32 | ::String)).new
+    end
+
+    def allocated?(key)
+      @data.has_key?(key)
+    end
+
+    def definied?(key)
+      @data[key].has_key?(:value)
+    end
+
+    def get(key)
+      @data[key][:value]
+    end
+
+    def set_value(key, value)
+      @data[key][:value] = value
+    end
+
+    def set_definition(key, kind)
+      @data[key] = Hash(Symbol, Int32 | ::String).new
+      @data[key][:kind] = kind
+    end
+  end
+
+  class Eval
+    @env : Env
+
+    def initialize
+      @env = Env.new
     end
 
     def exec(stm)
       case stm
-      when Definition then ""
+      when Definition
+        @env.set_definition(stm.name, stm.type)
       when Assign
         x = eval(stm.value)
-        if @env.has_key?(stm.name)
-          raise "#{stm.name} defined (#{@env[stm.name]})"
+        if @env.allocated?(stm.name)
+          if @env.definied?(stm.name)
+            raise "You are trying assign a value to '#{stm.name}' again"
+          else
+            @env.set_value(stm.name, x)
+          end
         else
-          @env[stm.name] = x
+          raise "Parse Error: #{stm.name} with type definition\ntry to:\n\t#{stm.name} :: #{stm.value.class.to_s.split("::").last}\n"
         end
       when Print
         puts eval(stm.exp)
@@ -33,11 +67,7 @@ module DX
     def eval(value : Exp) : Int32 | ::String
       case value
       when ID
-        if @env.has_key?(value.id)
-          @env[value.id]
-        else
-          raise "Undefined var #{value.id}"
-        end
+        @env.get(value.id)
       when Integer then value.int
       when Neg     then -ensure_int_or_id(eval(value.neg))
       when Plus    then ensure_int_or_id(eval(value.e1)) + ensure_int_or_id(eval(value.e2))
