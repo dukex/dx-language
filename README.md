@@ -5,22 +5,22 @@ Experimental language writen in crystal.
 The follow code
 
 ```
-# a :: Int
+a :: Int
 a = 5
 
 print a
 
-# b :: Int
+b :: Int
 b = a + 3
 
 # print b
 
-# c :: Int
+c :: Int
 c = a + b - 3
 
 # print c
 
-# d :: Int
+d :: Int
 d = a + c + 3 + -5
 
 print d

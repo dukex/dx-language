@@ -16,8 +16,6 @@ print c
 d :: Int
 d = a + c + 3 + -5
 
-
-
 print d
 
 e :: String
