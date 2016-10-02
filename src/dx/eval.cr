@@ -71,6 +71,7 @@ module DX
       when Integer then value.int
       when Neg     then -ensure_int_or_id(eval(value.neg))
       when Plus    then ensure_int_or_id(eval(value.e1)) + ensure_int_or_id(eval(value.e2))
+      when Multi   then ensure_int_or_id(eval(value.e1)) * ensure_int_or_id(eval(value.e2))
       when Minus   then ensure_int_or_id(eval(value.e1)) - ensure_int_or_id(eval(value.e2))
       when String  then value.exp
       else              raise "Evaluation not found to #{value}"

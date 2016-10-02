@@ -1,0 +1,32 @@
+a :: Int
+a = 5
+
+print a
+
+b :: Int
+b = a + 3
+
+print b
+
+c :: Int
+c = a + b - 3
+
+print c
+
+d :: Int
+d = a + c + 3 + -5
+
+print d
+
+print "=--"
+
+print " "
+
+aa :: Int
+aa = 2
+
+
+bb :: Int
+bb = aa * 5 + 2 * 2 - 1 * 4
+print bb
+

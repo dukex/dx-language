@@ -23,6 +23,7 @@ module DX
         {name: "Plus", regex: [expr, / \+ /, expr]},
         {name: "Minus", regex: [expr, / - /, expr]},
         {name: "Neg", regex: [/-/, expr]},
+        {name: "Multi", regex: [expr, / \* /, expr]},
 
         {name: "Print", regex: [/print /, expr]},
 
@@ -53,7 +54,7 @@ module DX
         matched = rule.match(line)
         if matched
           result = case rule.name
-                   when "Vardef"  then vardef(matched)
+                   when "Vardef"  then definition(matched)
                    when "Assign"  then assign(matched)
                    when "Print"   then print(matched)
                    when "Comment" then comment(matched)
@@ -78,6 +79,7 @@ module DX
                    when "Neg"    then neg(matched)
                    when "Plus"   then plus(matched)
                    when "Minus"  then minus(matched)
+                   when "Multi"  then multi(matched)
                    when "String" then string(matched)
                    else
                      raise "Parse Error: expr rule '#{rule.name}' not implemented"
@@ -88,7 +90,7 @@ module DX
       raise "Parse Error: expression not found '#{s}' in rules"
     end
 
-    private def vardef(cap : Regex::MatchData)
+    private def definition(cap : Regex::MatchData)
       e = parse_expr cap[1]
       t = cap[2]
       Definition.new(e, t)
@@ -125,6 +127,12 @@ module DX
       e1 = parse_expr cap[1]
       e2 = parse_expr cap[2]
       Plus.new e1, e2
+    end
+
+    private def multi(cap)
+      e1 = parse_expr cap[1]
+      e2 = parse_expr cap[2]
+      Multi.new e1, e2
     end
 
     private def minus(cap)

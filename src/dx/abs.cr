@@ -95,6 +95,20 @@ module DX
     end
   end
 
+  class Multi < Exp
+    @e1 : Exp
+    @e2 : Exp
+
+    getter :e1, :e2
+
+    def initialize(@e1, @e2)
+    end
+
+    def to_s(io)
+      io << "<Multi e1=#{@e1} e2=#{@e2}>"
+    end
+  end
+
   class Minus < Exp
     @e1 : Exp
     @e2 : Exp
