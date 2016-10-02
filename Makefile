@@ -1,3 +1,2 @@
 build:
-  	crystal build --release --cross-compile main.cr
-  	mv main dx
+		crystal build --release -o dx main.cr
