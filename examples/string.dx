@@ -1,0 +1,6 @@
+e :: String
+e = "Hello World"
+
+print e
+
+print "----"
